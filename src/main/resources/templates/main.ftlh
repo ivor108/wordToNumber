@@ -1,17 +1,14 @@
-<!DOCTYPE HTML>
-<html>
-<body>
+<#import "parts/common.ftlh" as c>
+<#import "parts/login.ftlh" as l>
+<@c.page>
     <div>
-        <form action="/logout" method="post">
-            <input type="submit" value="Sign Out"/>
-            <input type="hidden" name="_csrf" value="${_csrf.token}" />
-        </form>
+        <@l.logout/>
     </div>
 
     <div>
         <form method="post" modelAttribute = "modeChoice">
-            <input type="text" name="textFrom" placeholder="Введите текст">
-            <input type="text" name="textTo" value = ${textTo!} readonly>
+            <input type="text" name="textFrom" placeholder="Введите текст" value = ${textFrom!}>
+            <input type="text" name="textTo" readonly value = ${textTo!}>
             <button type="submit">Добавить</button>
             <div>
                 <input type="radio" id="modeChoice1" name="modeChoice" value="1" checked>
@@ -31,5 +28,4 @@
             <strong>${translation.authorName}</strong>
         </div>
     </#list>
-</body>
-</html>
+</@c.page>

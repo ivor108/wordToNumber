@@ -21,6 +21,9 @@ import java.io.IOException;
 
 @Controller
 public class MainController {
+    private NumberTranslator numberTranslator;
+    private WordTranslator wordTranslator;
+
     @Autowired
     private TranslationRepo translationRepo;
 
@@ -33,10 +36,12 @@ public class MainController {
     }
 
     @GetMapping("/main")
-    public String main(Model model) {
+    public String main(Model model) throws IOException {
         Iterable<Translation> translations = translationRepo.findAll();
-
         model.addAttribute("translations", translations);
+
+        numberTranslator = new NumberTranslator(Languages.RU, uploadPath);
+        wordTranslator = new WordTranslator(Languages.RU, uploadPath);
 
         return "main";
     }
@@ -47,18 +52,17 @@ public class MainController {
             @RequestParam String textFrom,
             @ModelAttribute("modeChoice") String modeChoice,
             Model model
-    ) throws IOException {
+    ) {
         String textTo;
 
         if(modeChoice.equals("1")){
-            NumberTranslator numberTranslator = new NumberTranslator(Languages.RU, uploadPath);
             textTo = numberTranslator.translate(textFrom);
         }
         else {
-            WordTranslator wordTranslator = new WordTranslator(Languages.RU, uploadPath);
             textTo = wordTranslator.translate(textFrom);
         }
 
+        model.addAttribute("textFrom", textFrom);
         model.addAttribute("textTo", textTo);
 
         Translation translation = new Translation(textFrom, textTo, user);
