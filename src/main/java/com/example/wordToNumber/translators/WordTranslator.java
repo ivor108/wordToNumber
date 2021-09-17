@@ -3,6 +3,7 @@ package com.example.wordToNumber.translators;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -41,51 +42,52 @@ public class WordTranslator implements Translator {
         return ranks;
     }
 
-    public Integer simpleTranslate(String textFrom) {
+    public BigInteger simpleTranslate(String textFrom) {
         int result = 0;
         if(textFrom.isEmpty())
-            return result;
+            return BigInteger.valueOf(result);
         String[] ranks = textFrom.split(" ");
         for (String rank:ranks){
             if(rank.equals("одна")){
                 result += Integer.parseInt(dictionary.get("один"));
                 continue;
             }
+            if(rank.equals("две")){
+                result += Integer.parseInt(dictionary.get("два"));
+                continue;
+            }
             if(dictionary.containsKey(rank))
                 result += Integer.parseInt(dictionary.get(rank));
         }
-
-
-        return result;
+        return BigInteger.valueOf(result);
     }
 
     @Override
     public String translate(String textFrom) {
-        int result = 0;
+        BigInteger result = new BigInteger("0");
         String[] ranks = rankSplit(textFrom);
 
         for (int i = 0; i < ranks.length; i++) {
             int index = ranks.length - i - 1;
             switch (index) {
                 case 0:
-                    result += simpleTranslate(ranks[i]);
+                    result = result.add(simpleTranslate(ranks[i]));
                     break;
                 case 1:
-                    result += simpleTranslate(ranks[i]) * 1000;
+                    result = result.add(simpleTranslate(ranks[i]).multiply(new BigInteger("1000")));
                     break;
                 case 2:
-                    result += simpleTranslate(ranks[i]) * 1000000;
+                    result = result.add(simpleTranslate(ranks[i]).multiply(new BigInteger("1000000")));
                     break;
                 case 3:
-                    result += simpleTranslate(ranks[i]) * 1000000000;
+                    result = result.add(simpleTranslate(ranks[i]).multiply(new BigInteger("1000000000")));
                     break;
             }
         }
-
-        if(result == 0 && !textFrom.equals("ноль"))
+        if(result.equals(new BigInteger("0")) && !textFrom.equals("ноль"))
             return "";
 
-        return Integer.toString(result);
+        return result.toString();
     }
 
     @Override
