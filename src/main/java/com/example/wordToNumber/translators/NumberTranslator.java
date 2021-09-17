@@ -20,6 +20,8 @@ public class NumberTranslator implements Translator {
     }
 
     public String[] rankSplit(String string){
+        if(!string.matches("\\d+"))
+            return null;
         int targetLength = string.length();
         if (string.length()%3 != 0)
             targetLength = (string.length()/3 + 1)*3;
@@ -62,6 +64,9 @@ public class NumberTranslator implements Translator {
     public String translate(String textFrom) {
         StringBuilder result = new StringBuilder();
         String[] ranks = rankSplit(textFrom);
+
+        if(ranks == null)
+            return "";
 
         for (int i = 0; i < ranks.length; i++) {
             int index = ranks.length - i - 1;

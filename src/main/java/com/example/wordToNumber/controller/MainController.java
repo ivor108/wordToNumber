@@ -65,9 +65,10 @@ public class MainController {
         model.addAttribute("textFrom", textFrom);
         model.addAttribute("textTo", textTo);
 
-        Translation translation = new Translation(textFrom, textTo, user);
-
-        translationRepo.save(translation);
+        if(!textTo.isEmpty()){
+            Translation translation = new Translation(textFrom, textTo, user);
+            translationRepo.save(translation);
+        }
 
         Iterable<Translation> translations = translationRepo.findAll();
 

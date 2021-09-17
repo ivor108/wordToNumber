@@ -51,7 +51,8 @@ public class WordTranslator implements Translator {
                 result += Integer.parseInt(dictionary.get("один"));
                 continue;
             }
-            result += Integer.parseInt(dictionary.get(rank));
+            if(dictionary.containsKey(rank))
+                result += Integer.parseInt(dictionary.get(rank));
         }
 
 
@@ -80,6 +81,9 @@ public class WordTranslator implements Translator {
                     break;
             }
         }
+
+        if(result == 0 && !textFrom.equals("ноль"))
+            return "";
 
         return Integer.toString(result);
     }
