@@ -64,16 +64,12 @@ public class MainController {
 
         model.addAttribute("textFrom", textFrom);
         model.addAttribute("textTo", textTo);
+        model.addAttribute("modeChoice", modeChoice);
 
         if(!textTo.isEmpty()){
             Translation translation = new Translation(textFrom, textTo, user);
             translationRepo.save(translation);
         }
-
-        Iterable<Translation> translations = translationRepo.findAll();
-
-        model.addAttribute("translations", translations);
-
         return "main";
     }
 }
