@@ -3,9 +3,8 @@ package com.example.wordToNumber.controller;
 import com.example.wordToNumber.domain.Translation;
 import com.example.wordToNumber.domain.User;
 import com.example.wordToNumber.repos.TranslationRepo;
-import com.example.wordToNumber.translators.Languages;
-import com.example.wordToNumber.translators.NumberTranslator;
-import com.example.wordToNumber.translators.WordTranslator;
+import com.example.wordToNumber.translators.Translator;
+import com.example.wordToNumber.translators.TranslatorStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,8 +20,6 @@ import java.io.IOException;
 
 @Controller
 public class MainController {
-    private NumberTranslator numberTranslator;
-    private WordTranslator wordTranslator;
 
     @Autowired
     private TranslationRepo translationRepo;
@@ -40,8 +37,6 @@ public class MainController {
         Iterable<Translation> translations = translationRepo.findAll();
         model.addAttribute("translations", translations);
 
-        numberTranslator = new NumberTranslator(Languages.RU, uploadPath);
-        wordTranslator = new WordTranslator(Languages.RU, uploadPath);
 
         return "main";
     }
@@ -51,20 +46,25 @@ public class MainController {
             @AuthenticationPrincipal User user,
             @RequestParam String textFrom,
             @ModelAttribute("modeChoice") String modeChoice,
+            @ModelAttribute("languageChoice") String languageChoice,
             Model model
-    ) {
+    ) throws IOException {
         String textTo;
 
+        Translator translator =  TranslatorStrategy.valueOf(languageChoice).getTranslator(uploadPath);
+
         if(modeChoice.equals("1")){
-            textTo = numberTranslator.translate(textFrom);
+            textTo = translator.translateNumber(textFrom);
         }
         else {
-            textTo = wordTranslator.translate(textFrom);
+            textTo = translator.translateWord(textFrom);
         }
+
 
         model.addAttribute("textFrom", textFrom);
         model.addAttribute("textTo", textTo);
         model.addAttribute("modeChoice", modeChoice);
+        model.addAttribute("languageChoice", languageChoice);
 
         if(!textTo.isEmpty()){
             Translation translation = new Translation(textFrom, textTo, user);

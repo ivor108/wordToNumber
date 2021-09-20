@@ -3,23 +3,24 @@ package com.example.wordToNumber.translators;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 
-public class NumberTranslator implements Translator {
+public class RuTranslator extends Language implements Translator{
 
-    public NumberTranslator(Languages language, String path) throws IOException {
-        try(BufferedReader br = new BufferedReader(new FileReader(path + language.toString() + ".csv"))){
+    public RuTranslator(String path) throws IOException {
+        try(BufferedReader br = new BufferedReader(new FileReader(path + "RU.csv"))){
             String line;
             while ((line = br.readLine()) != null){
                 String[] keyVal = line.split(", ");
-                dictionary.put(keyVal[0], keyVal[1]);
+                dictionaryNumber.put(keyVal[0], keyVal[1]);
+                dictionaryWord.put(keyVal[1], keyVal[0]);
             }
         }
     }
 
-    public String[] rankSplit(String string){
+    private String[] rankSplitNumber(String string){
         if(!string.matches("\\d+"))
             return null;
         int targetLength = string.length();
@@ -30,7 +31,7 @@ public class NumberTranslator implements Translator {
         return formatString.split("(?<=\\G...)");
     }
 
-    public String simpleTranslate(String textFrom) {
+    private String simpleTranslateNumber(String textFrom) {
         StringBuilder result = new StringBuilder();
         ArrayList<String> ranks = new ArrayList<String>(Arrays.asList(textFrom.split("")));
 
@@ -46,24 +47,23 @@ public class NumberTranslator implements Translator {
         }
 
         if(Integer.parseInt(textFrom) == 0){
-            return dictionary.get("0");
+            return dictionaryNumber.get("0");
         }
         else {
             for (String rank : ranks) {
                 if ((rank.equals("0")))
                     continue;
-                result.append(dictionary.get(rank)).append(" ");
+                result.append(dictionaryNumber.get(rank)).append(" ");
             }
         }
 
         return result.toString().substring(0, result.length() - 1);
     }
 
-
     @Override
-    public String translate(String textFrom) {
+    public String translateNumber(String textFrom) {
         StringBuilder result = new StringBuilder();
-        String[] ranks = rankSplit(textFrom);
+        String[] ranks = rankSplitNumber(textFrom);
 
         if(ranks == null)
             return "";
@@ -75,7 +75,7 @@ public class NumberTranslator implements Translator {
                 case 0:
                     if (Integer.parseInt(ranks[i]) == 0 && ranks.length > 1)
                         break;
-                    result.append(simpleTranslate(ranks[i]));
+                    result.append(simpleTranslateNumber(ranks[i]));
                     break;
                 case 1:
                     if (Integer.parseInt(ranks[i]) == 0)
@@ -84,17 +84,17 @@ public class NumberTranslator implements Translator {
                     if (endNumber % 10 == 1 && endNumber / 10 != 1) {
                         String prefix = ranks[i].substring(0, ranks[i].length() - 1);
                         if (Integer.parseInt(prefix) != 0)
-                            result.append(simpleTranslate(prefix + "0")).append(" ");
+                            result.append(simpleTranslateNumber(prefix + "0")).append(" ");
                         result.append("одна тысяча ");
                     } else if (endNumber % 10 == 2 && endNumber / 10 != 1) {
                         String prefix = ranks[i].substring(0, ranks[i].length() - 1);
                         if (Integer.parseInt(prefix) != 0)
-                            result.append(simpleTranslate(prefix + "0")).append(" ");
+                            result.append(simpleTranslateNumber(prefix + "0")).append(" ");
                         result.append("две тысячи ");
                     } else if (endNumber % 10 > 2 && endNumber % 10 < 5 && endNumber / 10 != 1)
-                        result.append(simpleTranslate(ranks[i])).append(" тысячи ");
+                        result.append(simpleTranslateNumber(ranks[i])).append(" тысячи ");
                     else
-                        result.append(simpleTranslate(ranks[i])).append(" тысяч ");
+                        result.append(simpleTranslateNumber(ranks[i])).append(" тысяч ");
                     break;
                 case 2:
                     if (Integer.parseInt(ranks[i]) == 0)
@@ -103,12 +103,12 @@ public class NumberTranslator implements Translator {
                     if (endNumber % 10 == 1 && endNumber / 10 != 1) {
                         String prefix = ranks[i].substring(0, ranks[i].length() - 1);
                         if (Integer.parseInt(prefix) != 0)
-                            result.append(simpleTranslate(prefix + "0")).append(" ");
+                            result.append(simpleTranslateNumber(prefix + "0")).append(" ");
                         result.append("один миллион ");
                     } else if (endNumber % 10 > 1 && endNumber % 10 < 5 && endNumber / 10 != 1)
-                        result.append(simpleTranslate(ranks[i])).append(" миллиона ");
+                        result.append(simpleTranslateNumber(ranks[i])).append(" миллиона ");
                     else
-                        result.append(simpleTranslate(ranks[i])).append(" миллионов ");
+                        result.append(simpleTranslateNumber(ranks[i])).append(" миллионов ");
                     break;
                 case 3:
                     if (Integer.parseInt(ranks[i]) == 0)
@@ -117,20 +117,86 @@ public class NumberTranslator implements Translator {
                     if (endNumber % 10 == 1 && endNumber / 10 != 1) {
                         String prefix = ranks[i].substring(0, ranks[i].length() - 1);
                         if (Integer.parseInt(prefix) != 0)
-                            result.append(simpleTranslate(prefix + "0")).append(" ");
+                            result.append(simpleTranslateNumber(prefix + "0")).append(" ");
                         result.append("один миддиард ");
                     } else if (endNumber % 10 > 1 && endNumber % 10 < 5 && endNumber / 10 != 1)
-                        result.append(simpleTranslate(ranks[i])).append(" миллиарда ");
+                        result.append(simpleTranslateNumber(ranks[i])).append(" миллиарда ");
                     else
-                        result.append(simpleTranslate(ranks[i])).append(" миллиардов ");
+                        result.append(simpleTranslateNumber(ranks[i])).append(" миллиардов ");
                     break;
             }
         }
         return result.toString();
     }
 
+    private static String[] rankSplitWord(String string){
+        String[] ranks = new String[4];
+        String[] ranksName = new String[3];
+        ranksName[0] = "миллиард";
+        ranksName[1] = "миллион";
+        ranksName[2] = "тысяч";
+        Arrays.fill(ranks, "");
+
+        for (int i = 0; i < 3; i++) {
+            if(string.matches(".*" + ranksName[i] + ".*")){
+                String[] tmp = string.split(" " + ranksName[i] + ".*?\\s");
+                ranks[i] = tmp[0];
+                if(tmp.length > 1)
+                    string = tmp[1];
+                else
+                    string = "";
+            }
+        }
+
+        ranks[3] = string;
+        return ranks;
+    }
+
+    private BigInteger simpleTranslateWord(String textFrom) {
+        int result = 0;
+        if(textFrom.isEmpty())
+            return BigInteger.valueOf(result);
+        String[] ranks = textFrom.split(" ");
+        for (String rank:ranks){
+            if(rank.equals("одна")){
+                result += Integer.parseInt(dictionaryWord.get("один"));
+                continue;
+            }
+            if(rank.equals("две")){
+                result += Integer.parseInt(dictionaryWord.get("два"));
+                continue;
+            }
+            if(dictionaryWord.containsKey(rank))
+                result += Integer.parseInt(dictionaryWord.get(rank));
+        }
+        return BigInteger.valueOf(result);
+    }
+
     @Override
-    public HashMap<String, String> getDictionary() {
-        return dictionary;
+    public String translateWord(String textFrom) {
+        BigInteger result = new BigInteger("0");
+        String[] ranks = rankSplitWord(textFrom);
+
+        for (int i = 0; i < ranks.length; i++) {
+            int index = ranks.length - i - 1;
+            switch (index) {
+                case 0:
+                    result = result.add(simpleTranslateWord(ranks[i]));
+                    break;
+                case 1:
+                    result = result.add(simpleTranslateWord(ranks[i]).multiply(new BigInteger("1000")));
+                    break;
+                case 2:
+                    result = result.add(simpleTranslateWord(ranks[i]).multiply(new BigInteger("1000000")));
+                    break;
+                case 3:
+                    result = result.add(simpleTranslateWord(ranks[i]).multiply(new BigInteger("1000000000")));
+                    break;
+            }
+        }
+        if(result.equals(new BigInteger("0")) && !textFrom.equals("ноль"))
+            return "";
+
+        return result.toString();
     }
 }
