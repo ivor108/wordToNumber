@@ -1,4 +1,6 @@
-package com.example.wordToNumber.translators;
+package com.example.wordToNumber.service;
+
+import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -6,11 +8,16 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
-public class RuTranslator extends Language implements Translator{
+@Service
+public class EnTranslator implements Translator{
 
-    public RuTranslator(String path) throws IOException {
-        try(BufferedReader br = new BufferedReader(new FileReader(path + "RU.csv"))){
+    private final HashMap<String, String> dictionaryNumber = new HashMap<>();
+    private final HashMap<String, String> dictionaryWord = new HashMap<>();
+
+    public EnTranslator() throws IOException {
+        try(BufferedReader br = new BufferedReader(new FileReader("D:\\dict\\EN.csv"))){
             String line;
             while ((line = br.readLine()) != null){
                 String[] keyVal = line.split(", ");
@@ -40,20 +47,19 @@ public class RuTranslator extends Language implements Translator{
             ranks.set(1, "0");
         }
 
-        for (int i = 0; i < ranks.size(); i++) {
-            int degree = (int) Math.pow(10, i);
-            int number = Integer.parseInt(ranks.get(ranks.size() - i - 1)) * degree;
-            ranks.set(ranks.size()- i - 1, Integer.toString(number));
-        }
+        int secondRank = Integer.parseInt(ranks.get(1)) * 10;
+        ranks.set(1, Integer.toString(secondRank));
 
         if(Integer.parseInt(textFrom) == 0){
             return dictionaryNumber.get("0");
         }
         else {
-            for (String rank : ranks) {
-                if ((rank.equals("0")))
+            for (int i = 0; i < ranks.size(); i++) {
+                if ((ranks.get(i).equals("0")))
                     continue;
-                result.append(dictionaryNumber.get(rank)).append(" ");
+                result.append(dictionaryNumber.get(ranks.get(i))).append(" ");
+                if(i == 0)
+                    result.append("hundred ");
             }
         }
 
@@ -80,49 +86,17 @@ public class RuTranslator extends Language implements Translator{
                 case 1:
                     if (Integer.parseInt(ranks[i]) == 0)
                         break;
-                    endNumber = Integer.parseInt(ranks[i].substring(ranks[i].length() - 2));
-                    if (endNumber % 10 == 1 && endNumber / 10 != 1) {
-                        String prefix = ranks[i].substring(0, ranks[i].length() - 1);
-                        if (Integer.parseInt(prefix) != 0)
-                            result.append(simpleTranslateNumber(prefix + "0")).append(" ");
-                        result.append("одна тысяча ");
-                    } else if (endNumber % 10 == 2 && endNumber / 10 != 1) {
-                        String prefix = ranks[i].substring(0, ranks[i].length() - 1);
-                        if (Integer.parseInt(prefix) != 0)
-                            result.append(simpleTranslateNumber(prefix + "0")).append(" ");
-                        result.append("две тысячи ");
-                    } else if (endNumber % 10 > 2 && endNumber % 10 < 5 && endNumber / 10 != 1)
-                        result.append(simpleTranslateNumber(ranks[i])).append(" тысячи ");
-                    else
-                        result.append(simpleTranslateNumber(ranks[i])).append(" тысяч ");
+                    result.append(simpleTranslateNumber(ranks[i])).append(" thousand ");
                     break;
                 case 2:
                     if (Integer.parseInt(ranks[i]) == 0)
                         break;
-                    endNumber = Integer.parseInt(ranks[i].substring(ranks[i].length() - 2));
-                    if (endNumber % 10 == 1 && endNumber / 10 != 1) {
-                        String prefix = ranks[i].substring(0, ranks[i].length() - 1);
-                        if (Integer.parseInt(prefix) != 0)
-                            result.append(simpleTranslateNumber(prefix + "0")).append(" ");
-                        result.append("один миллион ");
-                    } else if (endNumber % 10 > 1 && endNumber % 10 < 5 && endNumber / 10 != 1)
-                        result.append(simpleTranslateNumber(ranks[i])).append(" миллиона ");
-                    else
-                        result.append(simpleTranslateNumber(ranks[i])).append(" миллионов ");
+                    result.append(simpleTranslateNumber(ranks[i])).append(" million ");
                     break;
                 case 3:
                     if (Integer.parseInt(ranks[i]) == 0)
                         break;
-                    endNumber = Integer.parseInt(ranks[i].substring(ranks[i].length() - 2));
-                    if (endNumber % 10 == 1 && endNumber / 10 != 1) {
-                        String prefix = ranks[i].substring(0, ranks[i].length() - 1);
-                        if (Integer.parseInt(prefix) != 0)
-                            result.append(simpleTranslateNumber(prefix + "0")).append(" ");
-                        result.append("один миддиард ");
-                    } else if (endNumber % 10 > 1 && endNumber % 10 < 5 && endNumber / 10 != 1)
-                        result.append(simpleTranslateNumber(ranks[i])).append(" миллиарда ");
-                    else
-                        result.append(simpleTranslateNumber(ranks[i])).append(" миллиардов ");
+                    result.append(simpleTranslateNumber(ranks[i])).append(" billion ");
                     break;
             }
         }
@@ -132,9 +106,9 @@ public class RuTranslator extends Language implements Translator{
     private static String[] rankSplitWord(String string){
         String[] ranks = new String[4];
         String[] ranksName = new String[3];
-        ranksName[0] = "миллиард";
-        ranksName[1] = "миллион";
-        ranksName[2] = "тысяч";
+        ranksName[0] = "billion";
+        ranksName[1] = "million";
+        ranksName[2] = "thousand";
         Arrays.fill(ranks, "");
 
         for (int i = 0; i < 3; i++) {
@@ -156,18 +130,19 @@ public class RuTranslator extends Language implements Translator{
         int result = 0;
         if(textFrom.isEmpty())
             return BigInteger.valueOf(result);
+
+        String[] hundreds = textFrom.split(" hundred ");
+
+        if(hundreds.length > 1){
+            result += Integer.parseInt(dictionaryWord.get(hundreds[0])) * 100;
+            textFrom = hundreds[1];
+        }
+
         String[] ranks = textFrom.split(" ");
-        for (String rank:ranks){
-            if(rank.equals("одна")){
-                result += Integer.parseInt(dictionaryWord.get("один"));
-                continue;
-            }
-            if(rank.equals("две")){
-                result += Integer.parseInt(dictionaryWord.get("два"));
-                continue;
-            }
-            if(dictionaryWord.containsKey(rank))
+        for (String rank : ranks) {
+            if (dictionaryWord.containsKey(rank)) {
                 result += Integer.parseInt(dictionaryWord.get(rank));
+            }
         }
         return BigInteger.valueOf(result);
     }
@@ -194,7 +169,7 @@ public class RuTranslator extends Language implements Translator{
                     break;
             }
         }
-        if(result.equals(new BigInteger("0")) && !textFrom.equals("ноль"))
+        if(result.equals(new BigInteger("0")) && !textFrom.equals("zero"))
             return "";
 
         return result.toString();

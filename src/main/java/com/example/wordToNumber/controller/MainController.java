@@ -3,10 +3,10 @@ package com.example.wordToNumber.controller;
 import com.example.wordToNumber.domain.Translation;
 import com.example.wordToNumber.domain.User;
 import com.example.wordToNumber.repos.TranslationRepo;
-import com.example.wordToNumber.translators.Translator;
-import com.example.wordToNumber.translators.TranslatorStrategy;
+import com.example.wordToNumber.service.EnTranslator;
+import com.example.wordToNumber.service.RuTranslator;
+import com.example.wordToNumber.service.Translator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -22,10 +22,14 @@ import java.io.IOException;
 public class MainController {
 
     @Autowired
+    private RuTranslator ruTranslator;
+
+    @Autowired
+    private EnTranslator enTranslator;
+
+    @Autowired
     private TranslationRepo translationRepo;
 
-    @Value("${upload.path}")
-    private String uploadPath;
 
     @GetMapping("/")
     public String greeting(Model model) {
@@ -33,11 +37,9 @@ public class MainController {
     }
 
     @GetMapping("/main")
-    public String main(Model model) throws IOException {
+    public String main(Model model){
         Iterable<Translation> translations = translationRepo.findAll();
         model.addAttribute("translations", translations);
-
-
         return "main";
     }
 
@@ -48,17 +50,20 @@ public class MainController {
             @ModelAttribute("modeChoice") String modeChoice,
             @ModelAttribute("languageChoice") String languageChoice,
             Model model
-    ) throws IOException {
+    ) {
         String textTo;
 
-        Translator translator =  TranslatorStrategy.valueOf(languageChoice).getTranslator(uploadPath);
+        Translator currentTranslator;
 
-        if(modeChoice.equals("1")){
-            textTo = translator.translateNumber(textFrom);
-        }
-        else {
-            textTo = translator.translateWord(textFrom);
-        }
+        if(languageChoice.equals("RU"))
+            currentTranslator = ruTranslator;
+        else
+            currentTranslator = enTranslator;
+
+        if(modeChoice.equals("1"))
+            textTo = currentTranslator.translateNumber(textFrom);
+        else
+            textTo = currentTranslator.translateWord(textFrom);
 
 
         model.addAttribute("textFrom", textFrom);
