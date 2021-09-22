@@ -1,8 +1,10 @@
 package com.example.wordToNumber.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.util.ResourceUtils;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -17,7 +19,8 @@ public class RuTranslator implements Translator{
     private final HashMap<String, String> dictionaryWord = new HashMap<>();
 
     public RuTranslator() throws IOException {
-        try(BufferedReader br = new BufferedReader(new FileReader("D:\\dict\\RU.csv"))){
+        File dictionary = ResourceUtils.getFile("classpath:data/RU.csv");
+        try(BufferedReader br = new BufferedReader(new FileReader(dictionary))){
             String line;
             while ((line = br.readLine()) != null){
                 String[] keyVal = line.split(", ");

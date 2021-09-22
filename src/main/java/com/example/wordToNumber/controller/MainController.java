@@ -15,8 +15,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.io.IOException;
-
 
 @Controller
 public class MainController {
@@ -29,7 +27,6 @@ public class MainController {
 
     @Autowired
     private TranslationRepo translationRepo;
-
 
     @GetMapping("/")
     public String greeting(Model model) {
