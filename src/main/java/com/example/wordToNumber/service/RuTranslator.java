@@ -1,15 +1,13 @@
 package com.example.wordToNumber.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ResourceUtils;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -17,16 +15,13 @@ import java.util.HashMap;
 @Service
 public class RuTranslator implements Translator{
 
-    @Autowired
-    ResourceLoader resourceloader;
 
     private final HashMap<String, String> dictionaryNumber = new HashMap<>();
     private final HashMap<String, String> dictionaryWord = new HashMap<>();
 
     public RuTranslator() throws IOException {
-        File dictionary = resourceloader.getResource("classpath:data/RU.csv").getFile();
-        //File dictionary = ResourceUtils.getFile("classpath:data/RU.csv");
-        try(BufferedReader br = new BufferedReader(new FileReader(dictionary))){
+        ClassPathResource classPathResource = new ClassPathResource("data/RU.csv");
+        try(BufferedReader br = new BufferedReader(new InputStreamReader(classPathResource.getInputStream(), StandardCharsets.UTF_8))){
             String line;
             while ((line = br.readLine()) != null){
                 String[] keyVal = line.split(", ");
