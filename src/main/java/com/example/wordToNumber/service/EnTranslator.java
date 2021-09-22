@@ -1,5 +1,7 @@
 package com.example.wordToNumber.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
 
@@ -15,11 +17,15 @@ import java.util.HashMap;
 @Service
 public class EnTranslator implements Translator{
 
+    @Autowired
+    ResourceLoader resourceloader;
+
     private final HashMap<String, String> dictionaryNumber = new HashMap<>();
     private final HashMap<String, String> dictionaryWord = new HashMap<>();
 
     public EnTranslator() throws IOException {
-        File dictionary = ResourceUtils.getFile("classpath:data/EN.csv");
+        File dictionary = resourceloader.getResource("classpath:data/RU.csv").getFile();
+        //File dictionary = ResourceUtils.getFile("classpath:data/EN.csv");
         try(BufferedReader br = new BufferedReader(new FileReader(dictionary))){
             String line;
             while ((line = br.readLine()) != null){
